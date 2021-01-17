@@ -13,10 +13,111 @@ const render = require("./lib/htmlRenderer");
 const tesmList = [];
 
 const managerQuestions = [
-
+    {
+        type: "input",
+        name: "name",
+        message: "Enter manager's name: ",
+        validate: async (input) => {
+            if(input == "" || /\s/.test(input)) {
+                return "Please enter a valid first or last name.";
+            }
+            return true;
+        }
+    },
+    {
+        type: "input",
+        name: "email",
+        message: "Enter manager's email: ",
+        validate: async (input) => {
+            if(input == ) {
+                return "Please enter a valid first or last name.";
+            }
+            return "Please enter a valid email.";
+        }
+    },
+    {
+        type: "input",
+        name: "officeNum",
+        message: "Enter office number: ",
+        validate: async (input) => {
+            if(is NaN(input)) {
+                return "Please enter a valid office number.";
+            }
+            return true;
+        }
+    },
+    {
+        type: "list",
+        name: "hasTeam",
+        message: "Does the manager have any team members? ",
+        choicees: ["yes", "no"]
+    },
 ];
 
 const employeeQuestions = [
+    {
+        type: "input",
+        name: "name",
+        message: "Please enter employee name: ",
+        validate: async (input) => {
+            if (input == "") {
+                return  "Please enter a valid name";
+            }
+            return true;
+        }
+    },
+    {
+        type: "input",
+        name: "email",
+        message: "Please enter employee email: ",
+        validate: async (input) => {
+            if (input == ) {
+                return  true;
+            }
+            return "Please enter a valid email";
+        }
+    },
+    {
+        type: "list",
+        name: "role",
+        message: "What is the employee's role?",
+        choices: ["engineer", "intern"]
+    },
+    {
+        when: input => {
+            return input.role == "engineer"
+        },
+        type: "input",
+        name: "github",
+        message: "Please enter your github username: ",
+        validate: async(input) => {
+            if(input == "" || /\s/.test(input)) {
+                return "Please enter a valid Github username.";
+            }
+            return true;
+        }
+    },
+    {
+        when: input => {
+            return input.role == "intern"
+        },
+        type: "input",
+        name: "school",
+        message: "Please enter your school's name: ",
+        validate: async(input) => {
+            if(input == "") {
+                return "Please enter a valid schol name.";
+            }
+            return true;
+        }
+    },
+    {
+        type: "list",
+        name: "addMore",
+        message: "Add another team member?",
+        choices: ["Yes", "No"]
+    }
+    
 
 ];
 
