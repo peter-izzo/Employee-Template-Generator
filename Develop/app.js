@@ -122,10 +122,44 @@ const employeeQuestions = [
 ];
 
 const buildTeam() {
-
+    inquire.prompt(employeeQuestions).then(employeeInfo) => {
+        if (employeeInfo.role == "engineer") {
+            var newMember = new Engineer(employeeInfo.name, teamList.length + 1, employeeInfo.email, employeeInfo.github);
+        } else {
+            var newMember = new Intern(employeeInfo.name, teamList + 1, employeeInfo.email, employeeInfo.school);
+        }
+        teamList.push(newMember);
+        if (employeeInfo.addAnother === "Yes") {
+            console.log("----------");
+            buildTeam();
+        } else {
+            buildPage();
+        }
+    }
 };
 
 const buildPage() {
+    let new = fs.appendFileSync("./templates.main.html");
+    fs.writeFileSync("./output/teamPage.html", new, function (err) {
+        if(err) throw err;
+      })
+
+      console.log("Page created");
+
+      for(member of teamList) {
+          if (member.getRole() == "Manager") {
+              buildEmployeeCards("manager", member.getName(), member.getId(), member.getEmail(), "Office: " + member.getOfficeNumber());
+          } else if (member.getRole() == "Engineer") {
+            buildEmployeeCards("engineer", member.getName(), member.getId(), member.getEmail(), "Github: " + member.getGithub());
+          } else if (member.getRole() == "Intern") {
+            buildEmployeeCards("intern", member.getName(), member.getId(), member.getEmail(), "School: " + member.getSchool());
+          }
+      }
+      fs.appendFileSync("./output/teamPage.html", "</div></main></body></html>", function (err) {
+          if (err) throw err;
+        });
+    console.log("COMPLETE!");
+
 
 };
 
@@ -140,7 +174,7 @@ buildEmployeeCards(memberType, name, id, email, propertyValue) {
 
 function init() {
     inquirer.prompt(managerQuestions).then(managerInfo => {
-        let theManager = new Manager(managerInfo.name, 1, managerInfo.email, managerInfo.officeNum);
+        let theManager = new Manager(managerInfo.name, 1, managerInfo.email, managerInfo.officeNumber);
         teamList.push(theManager);
         console.log(" ");
         if (managerInfo.hasEmployees) {
