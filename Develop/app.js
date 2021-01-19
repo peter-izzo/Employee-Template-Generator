@@ -10,7 +10,7 @@ const outputPath = path.join(OUTPUT_DIR, "team.html");
 
 const render = require("./lib/htmlRenderer");
 
-const tesmList = [];
+const teamList = [];
 
 const managerQuestions = [
     {
@@ -29,8 +29,8 @@ const managerQuestions = [
         name: "email",
         message: "Enter manager's email: ",
         validate: async (input) => {
-            if(input == ) {
-                return "Please enter a valid first or last name.";
+            if(input == /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/.test(input)) {
+                return true;
             }
             return "Please enter a valid email.";
         }
@@ -40,7 +40,7 @@ const managerQuestions = [
         name: "officeNum",
         message: "Enter office number: ",
         validate: async (input) => {
-            if(is NaN(input)) {
+            if(isNaN(input)) {
                 return "Please enter a valid office number.";
             }
             return true;
@@ -48,8 +48,8 @@ const managerQuestions = [
     },
     {
         type: "list",
-        name: "hasTeam",
-        message: "Does the manager have any team members? ",
+        name: "hasEmployees",
+        message: "Does the manager have any employees? ",
         choicees: ["yes", "no"]
     },
 ];
@@ -71,7 +71,7 @@ const employeeQuestions = [
         name: "email",
         message: "Please enter employee email: ",
         validate: async (input) => {
-            if (input == ) {
+            if (input == /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/.test(input)) {
                 return  true;
             }
             return "Please enter a valid email";
@@ -129,8 +129,26 @@ const buildPage() {
 
 };
 
-function init() {
+buildEmployeeCards(memberType, name, id, email, propertyValue) {
+    let d = fs.readFileSync(`./templates/${memberType}.html`, 'utf-8');
+    d = d.replace("{{ name }}", name);
+    d = d.replace("{{ id }}", `ID: ${id}`);
+    d = d.replace("{{ email }}", `Email: <a href="mailto:${email}">${email}</a>`);
+    d = d.replace("specialProperty", propertyValue);
+    fs.appendFileSync("./output/teamPage.html", d, err => { if(err) throw err; })
+}
 
+function init() {
+    inquirer.prompt(managerQuestions).then(managerInfo => {
+        let theManager = new Manager(managerInfo.name, 1, managerInfo.email, managerInfo.officeNum);
+        teamList.push(theManager);
+        console.log(" ");
+        if (managerInfo.hasEmployees) {
+            buildTeam();
+        } else {
+            buildPage();
+        }
+    })
 };
 
 init();
