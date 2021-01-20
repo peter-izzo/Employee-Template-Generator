@@ -7,11 +7,65 @@ const fs = require("fs");
 
 const OUTPUT_DIR = path.resolve(__dirname, "output");
 const outputPath = path.join(OUTPUT_DIR, "team.html");
+const emailValidator = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
 const render = require("./lib/htmlRenderer");
 
-const teamList = [];
+var teamList = [];
+const managers = [];
+const engineers = [];
+const interns = [];
 
+const employeeQuestions = [
+    {
+        type: 'input',
+        message: 'Name:',
+        name: 'name'
+    },
+    {
+        type: 'input',
+        message: "ID:",
+        name: 'id'
+    },
+    {
+        type: 'input',
+        message: 'Email:',
+        name: 'email'
+    }
+];
+
+const special = [
+    'manager': {
+        type: 'input',
+        message: 'Enter your Office Number:',
+        name: 'special'
+    },
+    'engineer': {
+        type: 'input',
+        message: 'Enter your GitHub Username:',
+        name: 'special'
+    },
+    'intern': {
+        type: 'input',
+        message: 'Enter your school:',
+        name: 'special'
+    }
+];
+
+const type = {
+    type: 'rawlist',
+    message: 'Enter employee type:',
+    name: 'type',
+    choices: ['manager','engineer','intern','none']
+}
+
+const typeClass = {
+    'manager': Manager,
+    'engineer': Engineer,
+    'intern': Intern
+}
+
+//as cool as this was...it didn't work
 const managerQuestions = [
     {
         type: "input",
@@ -29,7 +83,7 @@ const managerQuestions = [
         name: "email",
         message: "Enter manager's email: ",
         validate: async (input) => {
-            if(input == /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/.test(input)) {
+            if(emailValidator.test(input)) {
                 return true;
             }
             return "Please enter a valid email.";
@@ -50,10 +104,11 @@ const managerQuestions = [
         type: "list",
         name: "hasEmployees",
         message: "Does the manager have any employees? ",
-        choicees: ["yes", "no"]
-    },
+        choices: ["Yes", "No"]
+    }
 ];
 
+/*same
 const employeeQuestions = [
     {
         type: "input",
@@ -71,7 +126,7 @@ const employeeQuestions = [
         name: "email",
         message: "Please enter employee email: ",
         validate: async (input) => {
-            if (input == /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/.test(input)) {
+            if (emailValidator.test(input)) {
                 return  true;
             }
             return "Please enter a valid email";
@@ -120,27 +175,39 @@ const employeeQuestions = [
     
 
 ];
+*/
 
-const buildTeam() {
-    inquire.prompt(employeeQuestions).then(employeeInfo) => {
+//This kinda works
+async function buildTeam() {
+    inquirer.prompt(employeeQuestions).then(employeeInfo => {
         if (employeeInfo.role == "engineer") {
             var newMember = new Engineer(employeeInfo.name, teamList.length + 1, employeeInfo.email, employeeInfo.github);
-        } else {
+            engineers.push(newMember);
+        } if (employeeInfo.role == "intern"){
             var newMember = new Intern(employeeInfo.name, teamList + 1, employeeInfo.email, employeeInfo.school);
+            interns.push(newMember);
+        } if (employeeInfo.role == "manager"){
+            var newMember = new Manager(employeeInfo.name, teamList + 1, employeeInfo.email, employeeInfo.school);
+            managers.push(newMember);
         }
         teamList.push(newMember);
-        if (employeeInfo.addAnother === "Yes") {
+        if (employeeInfo.addMore === "Yes") {
             console.log("----------");
+            console.log(teamList);
             buildTeam();
         } else {
-            buildPage();
+            return teamList;
+            //console.log(teamList);
         }
-    }
+    })
 };
 
-const buildPage() {
-    let new = fs.appendFileSync("./templates.main.html");
-    fs.writeFileSync("./output/teamPage.html", new, function (err) {
+/**
+ * none of this worked. reworking everything
+ 
+function buildPage() {
+    let newFile = fs.readFileSync("./templates/main.html");
+    fs.writeFileSync(outputPath, newFile, function (err) {
         if(err) throw err;
       })
 
@@ -163,26 +230,43 @@ const buildPage() {
 
 };
 
-buildEmployeeCards(memberType, name, id, email, propertyValue) {
-    let d = fs.readFileSync(`./templates/${memberType}.html`, 'utf-8');
+function buildEmployeeCards(memberType, name, id, email, propertyValue) {
+    let d = fs.readFileSync(`./templates/${memberType}.html`, 'utf8');
     d = d.replace("{{ name }}", name);
     d = d.replace("{{ id }}", `ID: ${id}`);
     d = d.replace("{{ email }}", `Email: <a href="mailto:${email}">${email}</a>`);
     d = d.replace("specialProperty", propertyValue);
     fs.appendFileSync("./output/teamPage.html", d, err => { if(err) throw err; })
 }
+*/
 
-function init() {
-    inquirer.prompt(managerQuestions).then(managerInfo => {
-        let theManager = new Manager(managerInfo.name, 1, managerInfo.email, managerInfo.officeNumber);
-        teamList.push(theManager);
-        console.log(" ");
-        if (managerInfo.hasEmployees) {
-            buildTeam();
-        } else {
-            buildPage();
-        }
-    })
+async function init() {
+    //inquirteamLister.prompt(managerQuestions).then(managerInfo => {
+        // let theManager = new Manager(managerInfo.name, 1, managerInfo.email, managerInfo.officeNumber);
+        // .push(theManager);
+    //     console.log("----------");
+    //     console.log(teamList);
+    //     if (managerInfo.hasEmployees) {
+    //         buildTeam();
+    //     } else {
+    //         // render(teamList);
+    //         console.log("finush this");
+    //     }
+    // })
+
+
+    let teamList = await buildTeam();
+    let html = await render(teamList);
+    if(!fs.existsSync(OUTPUT_DIR)){
+        fs.mkdirSync(OUTPUT_DIR);
+        fs.writeFile(outputPath, html, () => {
+            console.log('Created directory "output" and wrote to file "team.html"');
+        });
+    } else {
+        fs.writeFile(outputPath, html, () => {
+            console.log('Wrote to file "team.html"');
+        });
+    }
 };
 
 init();
