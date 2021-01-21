@@ -50,7 +50,13 @@ const employeeQuestions = [
 
         message: 'Email:',
 
-        name: 'email'
+        name: 'email',
+        validate: async (input) => {
+            if (emailValidator.test(input)) {
+                return true;
+            } 
+            return "Please enter a valid email address."
+        }
 
     },
 
